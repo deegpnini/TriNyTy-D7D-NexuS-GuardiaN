@@ -39,73 +39,73 @@ jobs:
       - name: Fuse trinity-xai-exoplanets
         run: |
           git subtree add --prefix=modules/trinity-xai-exoplanets \
-            https://github.com/deegpnini/trinity-xai-exoplanets.git main --squash || true
+            https://github.com/deegpnini/trinity-xai-exoplanets.git main || true
         continue-on-error: false
       
       - name: Fuse Arcturus-8-9
         run: |
           git subtree add --prefix=modules/Arcturus-8-9 \
-            https://github.com/deegpnini/Arcturus-8-9.git main --squash || true
+            https://github.com/deegpnini/Arcturus-8-9.git main || true
         continue-on-error: false
       
       - name: Fuse trinity-quantum-memory-system
         run: |
           git subtree add --prefix=modules/trinity-quantum-memory-system \
-            https://github.com/deegpnini/trinity-quantum-memory-system.git main --squash || true
+            https://github.com/deegpnini/trinity-quantum-memory-system.git main || true
         continue-on-error: false
       
       - name: Fuse frete-facil-plus
         run: |
           git subtree add --prefix=modules/frete-facil-plus \
-            https://github.com/deegpnini/frete-facil-plus.git main --squash || true
+            https://github.com/deegpnini/frete-facil-plus.git main || true
         continue-on-error: false
       
       - name: Fuse trinity-framework
         run: |
           git subtree add --prefix=modules/trinity-framework \
-            https://github.com/deegpnini/trinity-framework..git main --squash || true
+            https://github.com/deegpnini/trinity-framework..git main || true
         continue-on-error: false
       
       - name: Fuse try-g-nexus
         run: |
           git subtree add --prefix=modules/try-g-nexus \
-            https://github.com/deegpnini/try-g-nexus.git main --squash || true
+            https://github.com/deegpnini/try-g-nexus.git main || true
         continue-on-error: false
       
       - name: Fuse Trinity-Falcon-Lung
         run: |
           git subtree add --prefix=modules/Trinity-Falcon-Lung \
-            https://github.com/deegpnini/Trinity-Falcon-Lung.git main --squash || true
+            https://github.com/deegpnini/Trinity-Falcon-Lung.git main || true
         continue-on-error: false
       
       - name: Fuse D7D
         run: |
           git subtree add --prefix=modules/D7D \
-            https://github.com/deegpnini/D7D.git main --squash || true
+            https://github.com/deegpnini/D7D.git main || true
         continue-on-error: false
       
       - name: Fuse trinity-resilience-protocol
         run: |
           git subtree add --prefix=modules/trinity-resilience-protocol \
-            https://github.com/deegpnini/-trinity-resilience-protocol.git main --squash || true
+            https://github.com/deegpnini/-trinity-resilience-protocol.git main || true
         continue-on-error: false
       
       - name: Fuse D7D-CODEX
         run: |
           git subtree add --prefix=modules/D7D-CODEX \
-            https://github.com/deegpnini/D7D-CODEX.git main --squash || true
+            https://github.com/deegpnini/D7D-CODEX.git main || true
         continue-on-error: false
       
       - name: Fuse PROJETO_INTERESTELAR_HEBRON
         run: |
           git subtree add --prefix=modules/PROJETO_INTERESTELAR_HEBRON \
-            https://github.com/deegpnini/PROJETO_INTERESTELAR_HEBRON.git main --squash || true
+            https://github.com/deegpnini/PROJETO_INTERESTELAR_HEBRON.git main || true
         continue-on-error: false
       
       - name: Fuse TorreHebron
         run: |
           git subtree add --prefix=modules/TorreHebron \
-            https://github.com/deegpnini/TorreHebron.git main --squash || true
+            https://github.com/deegpnini/TorreHebron.git main || true
         continue-on-error: false
       
       - name: Update modules README with fusion details
