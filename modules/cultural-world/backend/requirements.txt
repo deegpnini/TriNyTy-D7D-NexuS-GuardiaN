@@ -1,4 +1,4 @@
-fastapi==0.109.0
+fastapi==0.109.1
 uvicorn==0.27.0
 pydantic==2.5.3
 sqlalchemy==2.0.25
@@ -6,4 +6,4 @@ numpy==1.26.3
 scipy==1.11.4
 scikit-learn==1.4.0
 networkx==3.2.1
-python-multipart==0.0.6
+python-multipart==0.0.22
