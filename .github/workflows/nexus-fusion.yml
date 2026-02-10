@@ -12,6 +12,8 @@ jobs:
   nexus-fusion:
     runs-on: ubuntu-latest
     if: github.event.inputs.confirm == 'FUSE'
+    permissions:
+      contents: write
     
     steps:
       - name: Checkout Nexus Guardian Repository
