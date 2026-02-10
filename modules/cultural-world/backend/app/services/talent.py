@@ -16,7 +16,7 @@ TODO: Build talent development recommendation engine
 TODO: Add support for multi-dimensional talent mapping
 """
 
-from typing import Dict, List, Any, Tuple
+from typing import Dict, List, Any, Tuple, Optional
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 import numpy as np
