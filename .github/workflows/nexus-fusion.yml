@@ -60,10 +60,10 @@ jobs:
             https://github.com/deegpnini/frete-facil-plus.git main
         continue-on-error: true
       
-      - name: Fuse trinity-framework
+      - name: Fuse trinity-framework.
         run: |
-          git subtree add --prefix=modules/trinity-framework \
-            https://github.com/deegpnini/trinity-framework..git main
+          git subtree add --prefix=modules/trinity-framework. \
+            https://github.com/deegpnini/trinity-framework. main
         continue-on-error: true
       
       - name: Fuse try-g-nexus
@@ -116,7 +116,7 @@ jobs:
           2. Arcturus-8-9 - Scientific reliability assessment system
           3. trinity-quantum-memory-system - Quantum memory persistence system
           4. frete-facil-plus - Freight management system
-          5. trinity-framework - Consciousness correlation engine
+          5. trinity-framework. - Consciousness correlation engine
           6. try-g-nexus - Web application interface
           7. Trinity-Falcon-Lung - Falcon 9 optimization
           8. D7D - Core D7D system
@@ -126,7 +126,7 @@ jobs:
           12. TorreHebron - Brazilian computational astronomy framework
           
           ## Fusion Information
-          - Fusion Date: ${{ github.event.repository.updated_at }}
+          - Fusion Date: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
           - Fusion Method: git subtree with full history preservation
           - Fusion Operator: ${{ github.actor }}
           EOF
@@ -153,7 +153,7 @@ jobs:
           echo "2. Arcturus-8-9" >> $GITHUB_STEP_SUMMARY
           echo "3. trinity-quantum-memory-system" >> $GITHUB_STEP_SUMMARY
           echo "4. frete-facil-plus" >> $GITHUB_STEP_SUMMARY
-          echo "5. trinity-framework" >> $GITHUB_STEP_SUMMARY
+          echo "5. trinity-framework." >> $GITHUB_STEP_SUMMARY
           echo "6. try-g-nexus" >> $GITHUB_STEP_SUMMARY
           echo "7. Trinity-Falcon-Lung" >> $GITHUB_STEP_SUMMARY
           echo "8. D7D" >> $GITHUB_STEP_SUMMARY

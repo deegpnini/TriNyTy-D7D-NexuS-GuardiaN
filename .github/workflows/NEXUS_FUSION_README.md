@@ -14,7 +14,7 @@ The following 12 repositories will be fused:
 2. **Arcturus-8-9** - Scientific reliability assessment system (8.9/10 skeptic rating)
 3. **trinity-quantum-memory-system** - Quantum memory persistence system based on neuroscience
 4. **frete-facil-plus** - Freight management system
-5. **trinity-framework** - Consciousness correlation engine for comet tracking
+5. **trinity-framework.** - Consciousness correlation engine for comet tracking
 6. **try-g-nexus** - Web application interface
 7. **Trinity-Falcon-Lung** - Open-source Falcon 9 optimization
 8. **D7D** - Core D7D system
@@ -31,7 +31,7 @@ The following 12 repositories will be fused:
 2. Click on the **Actions** tab
 3. Select **"Nexus Fusion - Merge 12 Source Repositories"** from the workflows list
 4. Click **"Run workflow"**
-5. In the branch dropdown, select the branch you want to run on (e.g., `copilot/add-nexus-fusion-workflow` or `main`)
+5. In the branch dropdown, select the branch you want to run on (e.g., `main`)
 6. In the input field for "confirm", type exactly: **FUSE**
 7. Click the green **"Run workflow"** button
 
@@ -39,9 +39,11 @@ The following 12 repositories will be fused:
 
 ```bash
 gh workflow run nexus-fusion.yml \
-  --ref copilot/add-nexus-fusion-workflow \
+  --ref main \
   --field confirm=FUSE
 ```
+
+Replace `main` with your target branch if needed.
 
 ### Via API
 
@@ -51,8 +53,10 @@ curl -X POST \
   -H "Authorization: Bearer YOUR_GITHUB_TOKEN" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
   https://api.github.com/repos/deegpnini/TriNyTy-D7D-NexuS-GuardiaN/actions/workflows/nexus-fusion.yml/dispatches \
-  -d '{"ref":"copilot/add-nexus-fusion-workflow","inputs":{"confirm":"FUSE"}}'
+  -d '{"ref":"main","inputs":{"confirm":"FUSE"}}'
 ```
+
+Replace `YOUR_GITHUB_TOKEN` with your personal access token and `main` with your target branch if needed.
 
 ## Manual Execution (Alternative)
 
@@ -90,7 +94,7 @@ TriNyTy-D7D-NexuS-GuardiaN/
 │   ├── Arcturus-8-9/
 │   ├── trinity-quantum-memory-system/
 │   ├── frete-facil-plus/
-│   ├── trinity-framework/
+│   ├── trinity-framework./
 │   ├── try-g-nexus/
 │   ├── Trinity-Falcon-Lung/
 │   ├── D7D/

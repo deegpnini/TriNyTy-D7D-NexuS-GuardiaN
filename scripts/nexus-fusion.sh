@@ -41,7 +41,7 @@ This directory contains the fused source repositories as git subtrees.
 2. Arcturus-8-9 - Scientific reliability assessment system
 3. trinity-quantum-memory-system - Quantum memory persistence system
 4. frete-facil-plus - Freight management system
-5. trinity-framework - Consciousness correlation engine
+5. trinity-framework. - Consciousness correlation engine
 6. try-g-nexus - Web application interface
 7. Trinity-Falcon-Lung - Falcon 9 optimization
 8. D7D - Core D7D system
@@ -71,9 +71,9 @@ for repo in "${REPOS[@]}"; do
     count=$((count + 1))
     echo "[$count/$total] Fusing $repo..."
     
-    # Add the repository as a subtree
+    # Add the repository as a subtree (without .git suffix for clean URLs)
     git subtree add --prefix="modules/$repo" \
-        "https://github.com/deegpnini/$repo.git" main \
+        "https://github.com/deegpnini/$repo" main \
         --message "🔀 Fuse $repo into Nexus Guardian" || {
         echo "⚠️  Warning: Failed to fuse $repo, continuing..."
         continue
