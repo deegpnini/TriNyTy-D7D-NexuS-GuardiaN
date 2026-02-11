@@ -58,7 +58,7 @@ ethics = ClaudeEthicalOverride()
 ### Processamento RAG
 ```python
 # Sistema RAG com ChromaDB
-from src.rag.chroma_manager import ChromaManager
+from src.rag.chroma_manager import NexusRAGSystem
 from src.rag.math_emotional_bridge import MathEmotionalBridge
 
 # Gestão de memória vetorial funcional
@@ -68,7 +68,7 @@ from src.rag.math_emotional_bridge import MathEmotionalBridge
 ### Processamento Grok
 ```python
 # Motor Grok para análise profunda
-from src.core.grok_engine import GrokEngine
+from src.core.grok_engine import GrokTruthEngine
 
 # Análise de padrões em tempo real
 # Processamento contextual avançado
