@@ -164,12 +164,16 @@ gh workflow run nexus-fusion.yml -f confirm=FUSE
 - Reports results to PR checks
 
 **Test Files:**
-- No test files exist yet
-- Placeholder test will be created automatically
-- Imports and tests core modules
+- No test files exist yet in the repository
+- Workflow will auto-create `tests/test_basic.py` with simple passing tests
+- Auto-created test includes:
+  - Basic assertion test to verify pytest works
+  - Python version check
+  - Core module import verification
+- Placeholder test will be created automatically on first workflow run
 
 **Next Steps for Testing:**
-1. pytest.yml will create `tests/test_placeholder.py` on first run
+1. pytest.yml will create `tests/test_basic.py` on first run
 2. Add real unit tests for core modules:
    - `tests/test_claude_ethics.py`
    - `tests/test_grok_engine.py`
