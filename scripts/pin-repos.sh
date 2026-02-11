@@ -14,8 +14,8 @@
 #
 # TODO: Add support for unpinning repositories
 # TODO: Add support for reordering pinned repositories
-# TODO: Add validation to check if repository exists before attempting to pin
 # TODO: Add support for batch operations with better error recovery
+#
 
 set -o pipefail
 
@@ -162,7 +162,7 @@ for repo in "${REPOS_ARRAY[@]}"; do
         
         # GitHub's pinning API requires updating the entire list of pinned repositories (max 6).
         # First, get currently pinned repositories
-        CURRENT_PINNED=$(gh api graphql -f query='
+        PINNED_QUERY_OUTPUT=$(gh api graphql -f query='
           query {
             viewer {
               pinnedItems(first: 6, types: REPOSITORY) {
@@ -174,14 +174,25 @@ for repo in "${REPOS_ARRAY[@]}"; do
               }
             }
           }
-        ' --jq '.data.viewer.pinnedItems.nodes[].id' 2>/dev/null | tr '\n' ',' | sed 's/,$//')
+        ' --jq '.data.viewer.pinnedItems.nodes[].id' 2>&1)
+        
+        if [ $? -ne 0 ]; then
+            log_error "  ❌ Failed to fetch currently pinned repositories"
+            log_error "  Error: $PINNED_QUERY_OUTPUT"
+            echo "  ❌ $repo - FAILED (could not fetch pinned items)" >> "$LOG_FILE"
+            FAILURE_COUNT=$((FAILURE_COUNT + 1))
+            continue
+        fi
+        
+        CURRENT_PINNED=$(echo "$PINNED_QUERY_OUTPUT" | tr '\n' ',' | sed 's/,$//')
         
         # Build the new list of repository IDs (current + new one)
         if [ -z "$CURRENT_PINNED" ]; then
             NEW_PINNED_LIST="\"$REPO_ID\""
+            PINNED_COUNT=0
         else
-            # Check if already pinned
-            if echo "$CURRENT_PINNED" | grep -q "$REPO_ID"; then
+            # Check if already pinned (use word boundaries for exact match)
+            if echo ",$CURRENT_PINNED," | grep -qF ",$REPO_ID,"; then
                 log_warning "  ⚠️  Repository is already pinned: $OWNER/$REPO_NAME"
                 echo "  ⚠️  $repo - SKIPPED (already pinned)" >> "$LOG_FILE"
                 SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
@@ -194,7 +205,7 @@ for repo in "${REPOS_ARRAY[@]}"; do
             NEW_PINNED_LIST="${NEW_PINNED_LIST}\"$REPO_ID\""
             
             # Check if we're at the limit (6 repositories)
-            PINNED_COUNT=$(echo "$CURRENT_PINNED" | tr ',' '\n' | wc -l)
+            PINNED_COUNT=${#PINNED_ARRAY[@]}
             if [ "$PINNED_COUNT" -ge 6 ]; then
                 log_error "  ❌ Cannot pin: Already at maximum (6 pinned repositories)"
                 echo "  ❌ $repo - FAILED (maximum pinned repositories reached)" >> "$LOG_FILE"
