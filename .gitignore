@@ -47,6 +47,7 @@ Thumbs.db
 # Logs
 *.log
 logs/
+docs/pin-repos-log.txt
 
 # Data & Models
 data/
