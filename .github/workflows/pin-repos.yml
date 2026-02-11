@@ -1,0 +1,103 @@
+name: Pin Repositories Workflow
+
+# This workflow allows manual pinning of GitHub repositories to your profile.
+# IMPORTANT: This workflow requires a Personal Access Token (PAT) to be stored
+# as a repository secret named NEXUS_PAT. The PAT must have 'user' scope to
+# manage profile pinned repositories.
+#
+# To add the secret:
+# 1. Go to repository Settings > Secrets and variables > Actions
+# 2. Click "New repository secret"
+# 3. Name: NEXUS_PAT
+# 4. Value: Your GitHub Personal Access Token with 'user' scope
+# 5. Click "Add secret"
+#
+# Until the NEXUS_PAT secret is added by the repository admin, this workflow
+# will fail with a clear message and will not attempt any pinning operations.
+
+on:
+  workflow_dispatch:
+    inputs:
+      repos:
+        description: 'Comma-separated list of repositories to pin (e.g., owner/repo1,owner/repo2)'
+        required: true
+        type: string
+      dry_run:
+        description: 'Dry run mode - do not actually pin repositories (just validate)'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  pin-repos:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      
+      - name: Validate NEXUS_PAT Secret Exists
+        if: ${{ github.event.inputs.dry_run == 'false' }}
+        env:
+          NEXUS_PAT: ${{ secrets.NEXUS_PAT }}
+        run: |
+          if [ -z "$NEXUS_PAT" ]; then
+            echo "❌ ERROR: NEXUS_PAT secret is not configured!"
+            echo ""
+            echo "This workflow requires a Personal Access Token (PAT) to be stored as a repository secret."
+            echo ""
+            echo "To add the NEXUS_PAT secret:"
+            echo "1. Go to repository Settings > Secrets and variables > Actions"
+            echo "2. Click 'New repository secret'"
+            echo "3. Name: NEXUS_PAT"
+            echo "4. Value: Your GitHub Personal Access Token with 'user' scope"
+            echo "5. Click 'Add secret'"
+            echo ""
+            echo "See docs/WORKFLOW_PIN_README.md for detailed instructions."
+            exit 1
+          fi
+          echo "✅ NEXUS_PAT secret is configured"
+      
+      - name: Install GitHub CLI
+        run: |
+          # GitHub CLI is pre-installed on ubuntu-latest runners
+          # Verify it's available
+          gh --version
+      
+      - name: Make Script Executable
+        run: |
+          chmod +x scripts/pin-repos.sh
+      
+      - name: Run Pin Repos Script
+        env:
+          NEXUS_PAT: ${{ secrets.NEXUS_PAT }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+        run: |
+          ./scripts/pin-repos.sh "${{ github.event.inputs.repos }}"
+      
+      - name: Upload Log Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pin-repos-log
+          path: docs/pin-repos-log.txt
+          retention-days: 30
+      
+      - name: Create Summary
+        if: always()
+        run: |
+          echo "## 📌 Pin Repositories Workflow Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Dry Run Mode:** ${{ github.event.inputs.dry_run }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Repositories:** ${{ github.event.inputs.repos }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f docs/pin-repos-log.txt ]; then
+            echo "### Log Output:" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            tail -n 20 docs/pin-repos-log.txt >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi
