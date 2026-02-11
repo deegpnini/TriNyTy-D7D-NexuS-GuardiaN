@@ -147,7 +147,7 @@ The script includes several TODOs for future enhancements:
 
 ## Additional Resources
 
-- [GitHub GraphQL API - Repository Pinning](https://docs.github.com/en/graphql/reference/mutations#updateuserpinnedrepositories)
+- [GitHub GraphQL API - Repository Pinning](https://docs.github.com/en/graphql/reference/mutations#updatepinnedrepositories)
 - [GitHub CLI Documentation](https://cli.github.com/manual/)
 - [Creating a Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
 
