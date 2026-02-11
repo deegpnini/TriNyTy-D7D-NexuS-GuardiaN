@@ -160,16 +160,61 @@ for repo in "${REPOS_ARRAY[@]}"; do
         
         log_info "  Repository ID: $REPO_ID"
         
+        # GitHub's pinning API requires updating the entire list of pinned repositories (max 6).
+        # First, get currently pinned repositories
+        CURRENT_PINNED=$(gh api graphql -f query='
+          query {
+            viewer {
+              pinnedItems(first: 6, types: REPOSITORY) {
+                nodes {
+                  ... on Repository {
+                    id
+                  }
+                }
+              }
+            }
+          }
+        ' --jq '.data.viewer.pinnedItems.nodes[].id' 2>/dev/null | tr '\n' ',' | sed 's/,$//')
+        
+        # Build the new list of repository IDs (current + new one)
+        if [ -z "$CURRENT_PINNED" ]; then
+            NEW_PINNED_LIST="\"$REPO_ID\""
+        else
+            # Check if already pinned
+            if echo "$CURRENT_PINNED" | grep -q "$REPO_ID"; then
+                log_warning "  ⚠️  Repository is already pinned: $OWNER/$REPO_NAME"
+                echo "  ⚠️  $repo - SKIPPED (already pinned)" >> "$LOG_FILE"
+                SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
+                continue
+            fi
+            
+            # Convert comma-separated IDs to JSON array format
+            IFS=',' read -ra PINNED_ARRAY <<< "$CURRENT_PINNED"
+            NEW_PINNED_LIST=$(printf '\"%s\",' "${PINNED_ARRAY[@]}")
+            NEW_PINNED_LIST="${NEW_PINNED_LIST}\"$REPO_ID\""
+            
+            # Check if we're at the limit (6 repositories)
+            PINNED_COUNT=$(echo "$CURRENT_PINNED" | tr ',' '\n' | wc -l)
+            if [ "$PINNED_COUNT" -ge 6 ]; then
+                log_error "  ❌ Cannot pin: Already at maximum (6 pinned repositories)"
+                echo "  ❌ $repo - FAILED (maximum pinned repositories reached)" >> "$LOG_FILE"
+                FAILURE_COUNT=$((FAILURE_COUNT + 1))
+                continue
+            fi
+        fi
+        
+        log_info "  Pinning repository (updating pinned items list)..."
+        
         # Pin the repository using GraphQL mutation
-        RESULT=$(gh api graphql -f query='
-          mutation($repositoryId: ID!) {
-            pinRepository: updateUserProfilePinItem(input: {
-              repositoryId: $repositoryId
+        RESULT=$(gh api graphql -f query="
+          mutation {
+            updatePinnedRepositories(input: {
+              repositoryIds: [$NEW_PINNED_LIST]
             }) {
               clientMutationId
             }
           }
-        ' -f repositoryId="$REPO_ID" 2>&1)
+        " 2>&1)
         
         if [ $? -eq 0 ]; then
             log_success "  ✅ Successfully pinned: $OWNER/$REPO_NAME"
