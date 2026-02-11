@@ -67,7 +67,7 @@ llama.cpp version: [version number]
 built with ARM NEON support
 ```
 
-### Step 2: Download Phi-2 Model (4GB)
+### Step 2: Download Phi-2 Model (1.6GB)
 
 **Direct Download Link (No Ollama Required):**
 
