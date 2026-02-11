@@ -163,7 +163,7 @@ for repo in "${REPOS_ARRAY[@]}"; do
         # Pin the repository using GraphQL mutation
         RESULT=$(gh api graphql -f query='
           mutation($repositoryId: ID!) {
-            addPinnedIssue: updateUserProfilePinItem(input: {
+            pinRepository: updateUserProfilePinItem(input: {
               repositoryId: $repositoryId
             }) {
               clientMutationId
