@@ -1,0 +1,91 @@
+name: Pin Repositories
+
+# IMPORTANT: This workflow requires the NEXUS_PAT secret to be configured
+# in the repository settings before it can run successfully.
+# See docs/WORKFLOW_PIN_README.md for setup instructions.
+
+on:
+  workflow_dispatch:
+    inputs:
+      repos:
+        description: 'Comma-separated list of repositories to pin (format: owner/repo)'
+        required: true
+        type: string
+      dry_run:
+        description: 'Dry run mode - prints steps without executing'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  pin-repos:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Install GitHub CLI
+        run: |
+          # GitHub CLI is pre-installed on ubuntu-latest runners
+          gh --version
+      
+      - name: Check for NEXUS_PAT secret
+        id: check_secret
+        run: |
+          if [ -z "${{ secrets.NEXUS_PAT }}" ]; then
+            echo "❌ ERROR: NEXUS_PAT secret is not configured"
+            echo "secret_exists=false" >> $GITHUB_OUTPUT
+          else
+            echo "✅ NEXUS_PAT secret is configured"
+            echo "secret_exists=true" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Dry Run - Print Steps
+        if: ${{ inputs.dry_run == true }}
+        run: |
+          echo "🔍 DRY RUN MODE - No actions will be performed"
+          echo "================================================"
+          echo ""
+          echo "📋 Configuration:"
+          echo "  Repositories: ${{ inputs.repos }}"
+          echo "  Dry Run: ${{ inputs.dry_run }}"
+          echo "  Secret Status: ${{ steps.check_secret.outputs.secret_exists == 'true' && 'configured' || 'NOT configured' }}"
+          echo ""
+          echo "📝 Steps that would be executed:"
+          echo "  1. Authenticate with GitHub using NEXUS_PAT"
+          echo "  2. Parse repository list: ${{ inputs.repos }}"
+          echo "  3. For each repository, call GraphQL mutation to pin it"
+          echo "  4. Write logs to docs/pin-repos-log.txt"
+          echo ""
+          echo "⚠️  To run this workflow for real:"
+          echo "  1. Ensure NEXUS_PAT secret is configured (see docs/WORKFLOW_PIN_README.md)"
+          echo "  2. Set dry_run to false when dispatching the workflow"
+          echo ""
+          exit 0
+      
+      - name: Verify Secret Before Execution
+        if: ${{ inputs.dry_run == false }}
+        run: |
+          if [ "${{ steps.check_secret.outputs.secret_exists }}" != "true" ]; then
+            echo "❌ Cannot proceed: NEXUS_PAT secret is not configured"
+            echo "Please add the NEXUS_PAT secret to repository settings"
+            echo "See docs/WORKFLOW_PIN_README.md for instructions"
+            exit 1
+          fi
+      
+      - name: Execute Pin Repositories Script
+        if: ${{ inputs.dry_run == false && steps.check_secret.outputs.secret_exists == 'true' }}
+        env:
+          NEXUS_PAT: ${{ secrets.NEXUS_PAT }}
+        run: |
+          chmod +x scripts/pin-repos.sh
+          ./scripts/pin-repos.sh "${{ inputs.repos }}"
+      
+      - name: Upload Logs
+        if: ${{ inputs.dry_run == false && always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: pin-repos-logs
+          path: docs/pin-repos-log.txt
+          if-no-files-found: warn
