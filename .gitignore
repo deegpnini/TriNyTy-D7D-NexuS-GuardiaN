@@ -62,8 +62,41 @@ chroma/
 
 # Environment Variables
 .env
+.env.*
+*.env
+.venv
 .secrets
 config/secrets.yaml
+config/secrets.yml
+secrets.*
+.secrets.*
+
+# Security - Keys & Certificates
+*.key
+*.pem
+*.p12
+*.pfx
+*.cer
+*.crt
+*.der
+*.csr
+*.rsa
+*.dsa
+*.pub
+id_rsa*
+id_dsa*
+*.keystore
+*.jks
+
+# Security - Credentials & Tokens
+credentials.*
+*.credentials
+auth.*
+*.auth
+token.*
+*.token
+apikey.*
+*.apikey
 
 # Temporary Files
 tmp/
