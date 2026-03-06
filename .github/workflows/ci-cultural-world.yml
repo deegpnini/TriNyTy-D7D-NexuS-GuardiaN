@@ -1,0 +1,211 @@
+name: CI - Cultural World Adaptive Nexus
+
+on:
+  push:
+    branches:
+      - nexus/feature-cultural-world-20260210
+    paths:
+      - 'modules/cultural-world/**'
+      - '.github/workflows/ci-cultural-world.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'modules/cultural-world/**'
+      - '.github/workflows/ci-cultural-world.yml'
+
+jobs:
+  lint-and-test:
+    name: Lint and Test Cultural World Module
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: ['3.11']
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('modules/cultural-world/backend/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      
+      - name: Install dependencies
+        run: |
+          cd modules/cultural-world/backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install flake8 pytest pytest-cov black isort
+      
+      - name: Run Black (code formatter check)
+        run: |
+          cd modules/cultural-world/backend
+          black --check app/ || echo "Black formatting check completed (info only)"
+        continue-on-error: true
+      
+      - name: Run isort (import sorting check)
+        run: |
+          cd modules/cultural-world/backend
+          isort --check-only app/ || echo "Isort check completed (info only)"
+        continue-on-error: true
+      
+      - name: Run Flake8 (linting)
+        run: |
+          cd modules/cultural-world/backend
+          flake8 app/ --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 app/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      
+      - name: Run pytest (tests)
+        run: |
+          cd modules/cultural-world
+          pytest tests/ -v --cov=backend/app --cov-report=xml --cov-report=term
+      
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./modules/cultural-world/coverage.xml
+          flags: cultural-world
+          name: cultural-world-coverage
+        continue-on-error: true
+      
+      - name: Archive test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: pytest-results-${{ matrix.python-version }}
+          path: |
+            modules/cultural-world/coverage.xml
+            modules/cultural-world/.pytest_cache/
+          retention-days: 30
+  
+  build-docker:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build Docker image
+        run: |
+          cd modules/cultural-world/backend
+          docker build -t cultural-world-backend:test .
+      
+      - name: Test Docker image
+        run: |
+          docker run -d -p 8000:8000 --name test-container cultural-world-backend:test
+          sleep 10
+          curl -f http://localhost:8000/health || exit 1
+          docker stop test-container
+          docker rm test-container
+  
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          cd modules/cultural-world/backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install httpx
+      
+      - name: Start API server
+        run: |
+          cd modules/cultural-world/backend
+          uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          sleep 5
+      
+      - name: Test API endpoints
+        run: |
+          # Test health endpoint
+          curl -f http://localhost:8000/health
+          
+          # Test root endpoint
+          curl -f http://localhost:8000/
+          
+          # Test info endpoints
+          curl -f http://localhost:8000/solfeggio
+          curl -f http://localhost:8000/archetypes
+          curl -f http://localhost:8000/talents
+      
+      - name: Run example script
+        run: |
+          cd modules/cultural-world/scripts
+          python example_passport.py --no-api --output /tmp/test_passport.json
+          
+          # Verify passport file was created
+          test -f /tmp/test_passport.json && echo "✅ Passport file created successfully"
+  
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: 'modules/cultural-world'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+        continue-on-error: true
+      
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+        continue-on-error: true
+
+  summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [lint-and-test, build-docker, integration-test]
+    if: always()
+    
+    steps:
+      - name: Report CI Status
+        run: |
+          echo "## 🌀 Cultural World Adaptive Nexus CI Results"
+          echo ""
+          echo "### Test Results:"
+          echo "- Linting and Tests: ${{ needs.lint-and-test.result }}"
+          echo "- Docker Build: ${{ needs.build-docker.result }}"
+          echo "- Integration Tests: ${{ needs.integration-test.result }}"
+          echo ""
+          echo "### Summary:"
+          if [ "${{ needs.lint-and-test.result }}" = "success" ] && \
+             [ "${{ needs.build-docker.result }}" = "success" ] && \
+             [ "${{ needs.integration-test.result }}" = "success" ]; then
+            echo "✅ All CI checks passed successfully!"
+            echo "🌀 528Hz - Frequency of Transformation & Miracles ✨"
+          else
+            echo "⚠️ Some CI checks failed. Please review the logs."
+          fi
